@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --font-inter: 'Inter', system-ui, sans-serif;
+  
+  --color-base-950: #0a0a0b;
+  --color-base-900: #121214;
+  --color-base-800: #1b1b1e;
+  --color-base-700: #27272a;
+  
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  
+  --color-danger-500: #ef4444;
+  --color-success-500: #22c55e;
+  --color-warning-500: #f59e0b;
+}
+
+@layer base {
+  html, body {
+    @apply bg-base-950 text-gray-200 antialiased h-screen overflow-hidden font-inter selection:bg-brand-500/30;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-base-900/60 backdrop-blur-md border border-white/5;
+  }
+  
+  .glass-btn {
+    @apply flex items-center justify-center gap-2 px-3 py-1.5 rounded-md
+           bg-white/5 hover:bg-white/10 active:bg-white/5
+           transition-colors duration-200 text-sm font-medium border border-white/5;
+  }
+  
+  .sidebar-icon {
+    @apply w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200
+           hover:bg-white/10 text-gray-400 hover:text-white cursor-pointer;
+  }
+}
