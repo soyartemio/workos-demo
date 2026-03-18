@@ -9,10 +9,12 @@ interface Props {
 }
 
 export const TaskDetailPanel: React.FC<Props> = ({ taskId, onClose }) => {
-  const { tasks, users, projects, updateTask, deleteTask } = useDemoStore();
+  const { tasks, users, projects, updateTask, deleteTask, currentUserId } = useDemoStore();
   const task = tasks.find(t => t.id === taskId);
   const project = projects.find(p => p.id === task?.projectId);
   const assignee = users.find(u => u.id === task?.assigneeId);
+  const currentUser = users.find(u => u.id === currentUserId);
+  const canEditAssignee = currentUser && currentUser.role !== 'Contributor';
 
   if (!task) return null;
 
@@ -132,7 +134,8 @@ export const TaskDetailPanel: React.FC<Props> = ({ taskId, onClose }) => {
                 <select
                   value={task.assigneeId}
                   onChange={e => updateTask(task.id, { assigneeId: e.target.value })}
-                  className="w-full bg-transparent border-none outline-none text-sm text-gray-200 cursor-pointer"
+                  disabled={!canEditAssignee}
+                  className={`w-full bg-transparent border-none outline-none text-sm text-gray-200 ${canEditAssignee ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                 >
                   {users.map(u => <option key={u.id} value={u.id} className="bg-base-900">{u.name}</option>)}
                 </select>

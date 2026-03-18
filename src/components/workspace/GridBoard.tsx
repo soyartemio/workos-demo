@@ -19,7 +19,7 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
   const {
     tasks, projects, users, departments,
     isManagerView, toggleManagerView,
-    updateTask, deleteTask
+    updateTask, deleteTask, currentUserId
   } = useDemoStore();
 
 
@@ -37,6 +37,9 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
   });
 
   const firstProject = projects[0];
+
+  const currentUser = users.find(u => u.id === currentUserId);
+  const canEditAssignee = currentUser && currentUser.role !== 'Contributor';
 
   const selectCls = 'bg-base-800 border border-white/5 rounded-md px-2 py-1 text-xs text-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer';
 
@@ -185,7 +188,8 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
                         <select
                           value={task.assigneeId}
                           onChange={(e) => updateTask(task.id, { assigneeId: e.target.value })}
-                          className="appearance-none bg-transparent border-none outline-none text-xs text-gray-400 focus:text-gray-200 cursor-pointer hover:text-gray-200 transition-colors truncate max-w-[80px]"
+                          disabled={!canEditAssignee}
+                          className={`appearance-none bg-transparent border-none outline-none text-xs text-gray-400 focus:text-gray-200 transition-colors truncate max-w-[80px] ${canEditAssignee ? 'cursor-pointer hover:text-gray-200' : 'cursor-not-allowed opacity-80'}`}
                         >
                           {users.map(u => (
                             <option key={u.id} value={u.id} className="bg-base-900 text-gray-300">
