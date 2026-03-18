@@ -8,6 +8,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, RefreshCw } from 'lucide-react';
 import { useDemoStore } from '../../store/demoStore';
+import { getVisibleDepts } from '../../utils/permissions';
 
 interface Props {
   isOpen: boolean;
@@ -24,12 +25,7 @@ export const MobileDrawer: React.FC<Props> = ({ isOpen, onClose, onDeptSelect })
   } = useDemoStore();
 
   const currentUser = users.find(u => u.id === currentUserId);
-  const isContributor = currentUser?.role === 'Contributor';
-  const mainDepts = departments.filter(d => {
-    if (d.id === 'dept-exec') return false;
-    if (isContributor && currentUser?.departmentId !== d.id) return false;
-    return true;
-  });
+  const mainDepts = currentUser ? getVisibleDepts(currentUser, departments) : [];
 
   const DEPT_STATUS_MAP: Record<string, { label: string; cls: string }> = {
     'dept-eng': { label: 'At Risk', cls: 'bg-warning-500/10 text-warning-500 border-warning-500/20' },

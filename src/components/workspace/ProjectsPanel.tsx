@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { useDemoStore } from '../../store/demoStore';
+import { getVisibleDepts, buildUserProjectSet, canViewProject } from '../../utils/permissions';
 import { motion } from 'framer-motion';
 import { Plus, AlertTriangle, CheckCircle2, TrendingDown, Clock } from 'lucide-react';
 
@@ -25,24 +26,23 @@ interface Props {
 export const ProjectsPanel: React.FC<Props> = ({ onAddTask }) => {
   const { departments, projects, tasks, users, isManagerView, currentUserId } = useDemoStore();
   
-  const currentUser = users.find(u => u.id === currentUserId);
-  const isContributor = currentUser?.role === 'Contributor';
+  const currentUser = users.find(u => u.id === currentUserId) ?? null;
+  const userProjectIds = currentUserId ? buildUserProjectSet(currentUserId, tasks) : new Set<string>();
 
-  const mainDepts = departments.filter(d => {
-    if (d.id === 'dept-exec') return false;
-    if (isContributor && currentUser?.departmentId !== d.id) return false;
-    return true;
-  });
+  const mainDepts = currentUser ? getVisibleDepts(currentUser, departments) : [];
+  const visibleProjects = currentUser
+    ? projects.filter(p => canViewProject(currentUser, p, userProjectIds))
+    : [];
 
   return (
     <div className="flex flex-col gap-6 pb-8">
       <div>
         <h2 className="text-xl font-bold text-white">All Projects</h2>
-        <p className="text-sm text-gray-500 mt-0.5">{projects.length} projects across {mainDepts.length} departments</p>
+        <p className="text-sm text-gray-500 mt-0.5">{visibleProjects.length} projects across {mainDepts.length} departments</p>
       </div>
 
       {mainDepts.map(dept => {
-        const deptProjects = projects.filter(p => p.departmentId === dept.id);
+        const deptProjects = visibleProjects.filter(p => p.departmentId === dept.id);
         return (
           <div key={dept.id}>
             <div className="flex items-center gap-2 mb-3">

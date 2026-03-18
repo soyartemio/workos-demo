@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, User, Clock, DollarSign, Tag, Trash2, ClipboardList, CheckCircle2 } from 'lucide-react';
 import { useDemoStore, type TaskStatus, type TaskPriority } from '../../store/demoStore';
+import { buildProjectDeptMap, canReassignTask } from '../../utils/permissions';
 
 interface Props {
   taskId: string;
@@ -13,8 +14,10 @@ export const TaskDetailPanel: React.FC<Props> = ({ taskId, onClose }) => {
   const task = tasks.find(t => t.id === taskId);
   const project = projects.find(p => p.id === task?.projectId);
   const assignee = users.find(u => u.id === task?.assigneeId);
-  const currentUser = users.find(u => u.id === currentUserId);
-  const canEditAssignee = currentUser && currentUser.role !== 'Contributor';
+  const currentUser = users.find(u => u.id === currentUserId) ?? null;
+  const projectDeptMap = buildProjectDeptMap(projects);
+  const taskDeptId = task ? (projectDeptMap.get(task.projectId) ?? '') : '';
+  const canEditAssignee = currentUser && task ? canReassignTask(currentUser, taskDeptId) : false;
 
   if (!task) return null;
 

@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDemoStore, type TaskStatus } from '../../store/demoStore';
+import { buildUserProjectSet, canViewProject } from '../../utils/permissions';
 import {
   ArrowLeft, Users, Plus, ChevronDown, ChevronRight
 } from 'lucide-react';
@@ -39,18 +40,13 @@ export const DepartmentView: React.FC<DeptProps> = ({ onBack, onAddTask, onTaskO
   const dept = departments.find(d => d.id === activeDepartmentId);
   if (!dept) return null;
 
-  const currentUser = users.find(u => u.id === currentUserId);
-  const isContributor = currentUser?.role === 'Contributor';
+  const currentUser = users.find(u => u.id === currentUserId) ?? null;
+  const userProjectIds = currentUserId ? buildUserProjectSet(currentUserId, tasks) : new Set<string>();
 
-  const deptProjects = projects.filter(p => {
-    if (p.departmentId !== dept.id) return false;
-    if (isContributor) {
-      const hasTasks = tasks.some(t => t.projectId === p.id && t.assigneeId === currentUserId);
-      return hasTasks;
-    }
-    return true;
-  });
-  
+  const deptProjects = currentUser
+    ? projects.filter(p => canViewProject(currentUser, p, userProjectIds))
+    : [];
+
   const deptUsers = users.filter(u => u.departmentId === dept.id);
 
 

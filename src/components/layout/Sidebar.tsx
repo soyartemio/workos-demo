@@ -6,6 +6,7 @@
 import React from 'react';
 import { LayoutDashboard, BarChart3, FolderClosed, PlusCircle, Users, Settings } from 'lucide-react';
 import { useDemoStore } from '../../store/demoStore';
+import { getVisibleDepts } from '../../utils/permissions';
 
 type ViewType = 'dashboard' | 'workspace';
 
@@ -30,12 +31,7 @@ export const Sidebar: React.FC<Props> = ({ currentView, onViewChange, className 
 
   const toggleDept = (id: string) => setExpandedDepts(p => ({ ...p, [id]: !p[id] }));
 
-  const isContributor = currentUser?.role === 'Contributor';
-  const mainDepts = departments.filter(d => {
-    if (d.id === 'dept-exec') return false;
-    if (isContributor && currentUser?.departmentId !== d.id) return false;
-    return true;
-  });
+  const mainDepts = currentUser ? getVisibleDepts(currentUser, departments) : [];
 
   return (
     <aside className={`w-64 h-full bg-base-950 border-r border-white/5 flex flex-col shrink-0 ${className ?? ''}`}>

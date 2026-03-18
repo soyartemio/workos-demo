@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useDemoStore, type TaskStatus, type TaskPriority } from '../../store/demoStore';
+import { getVisibleDepts, buildProjectDeptMap, buildUserProjectSet, canViewTask, canReassignTask } from '../../utils/permissions';
 import { Eye, EyeOff, Lock, Trash2, Plus } from 'lucide-react';
 
 interface Props {
@@ -26,25 +27,18 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
   const [filterDept, setFilterDept] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  const mainDepts = departments.filter(d => d.id !== 'dept-exec');
+  // ── Permissions (computed once, used in filter + render) ──────────────
+  const currentUser = users.find(u => u.id === currentUserId) ?? null;
+  const projectDeptMap = buildProjectDeptMap(projects);
+  const userProjectIds = currentUserId ? buildUserProjectSet(currentUserId, tasks) : new Set<string>();
+  const mainDepts = currentUser ? getVisibleDepts(currentUser, departments) : [];
 
-  const currentUser = users.find(u => u.id === currentUserId);
-  const canEditAssignee = currentUser && currentUser.role !== 'Contributor';
-
-  // Filter tasks
+  // ── Filter tasks ───────────────────────────────────────────────────────
   const filteredTasks = tasks.filter(t => {
-    const proj = projects.find(p => p.id === t.projectId);
-    if (filterDept !== 'all' && proj?.departmentId !== filterDept) return false;
+    if (filterDept !== 'all' && projectDeptMap.get(t.projectId) !== filterDept) return false;
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
-
-    // Permissions: If Contributors, they can only see tasks from projects where they belong
-    const isContributor = currentUser && currentUser.role === 'Contributor';
-    if (isContributor) {
-      const userTasksInProj = tasks.filter(ut => ut.projectId === t.projectId && ut.assigneeId === currentUserId);
-      if (userTasksInProj.length === 0) return false;
-    }
-
-    return true;
+    if (!currentUser) return false;
+    return canViewTask(currentUser, t, projectDeptMap, userProjectIds);
   });
 
   const firstProject = projects[0];
@@ -188,26 +182,30 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
                   </td>
 
 
-                  {/* Assignee */}
+                  {/* Assignee — editable per-row based on role+dept */}
                   <td className="px-4 py-2">
-                    {assignee && (
-                      <div className="flex items-center gap-1.5">
-                        <img src={assignee.avatar} alt={assignee.name} className="w-5 h-5 rounded-full border border-white/10 shrink-0" />
-                        <select
-                          value={task.assigneeId}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => updateTask(task.id, { assigneeId: e.target.value })}
-                          disabled={!canEditAssignee}
-                          className={`appearance-none bg-transparent border-none outline-none text-xs text-gray-400 focus:text-gray-200 transition-colors truncate max-w-[80px] ${canEditAssignee ? 'cursor-pointer hover:text-gray-200' : 'cursor-not-allowed opacity-80'}`}
-                        >
-                          {users.map(u => (
-                            <option key={u.id} value={u.id} className="bg-base-900 text-gray-300">
-                              {u.name.split(' ')[0]}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+                    {assignee && (() => {
+                      const taskDeptId = projectDeptMap.get(task.projectId) ?? '';
+                      const canEdit = currentUser ? canReassignTask(currentUser, taskDeptId) : false;
+                      return (
+                        <div className="flex items-center gap-1.5">
+                          <img src={assignee.avatar} alt={assignee.name} className="w-5 h-5 rounded-full border border-white/10 shrink-0" />
+                          <select
+                            value={task.assigneeId}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => updateTask(task.id, { assigneeId: e.target.value })}
+                            disabled={!canEdit}
+                            className={`appearance-none bg-transparent border-none outline-none text-xs text-gray-400 focus:text-gray-200 transition-colors truncate max-w-[80px] ${canEdit ? 'cursor-pointer hover:text-gray-200' : 'cursor-default'}`}
+                          >
+                            {users.map(u => (
+                              <option key={u.id} value={u.id} className="bg-base-900 text-gray-300">
+                                {u.name.split(' ')[0]}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    })()}
                   </td>
 
                   {/* Status */}

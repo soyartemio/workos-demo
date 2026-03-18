@@ -8,6 +8,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Clock, CheckCircle2, AlertTriangle, ChevronRight } from 'lucide-react';
 import { useDemoStore } from '../../store/demoStore';
+import { getVisibleDepts, buildProjectDeptMap, buildUserProjectSet, canViewTask } from '../../utils/permissions';
 
 const fmt$ = (n: number) => n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`;
 
@@ -20,13 +21,11 @@ export const MobileHome: React.FC<Props> = ({ onDeptSelect, onTaskOpen }) => {
   const { departments, projects, tasks, users, currentUserId, getDepartmentHealth } = useDemoStore();
 
   const currentUser = users.find(u => u.id === currentUserId);
-  const isContributor = currentUser?.role === 'Contributor';
 
-  const mainDepts = departments.filter(d => {
-    if (d.id === 'dept-exec') return false;
-    if (isContributor && currentUser?.departmentId !== d.id) return false;
-    return true;
-  });
+  // permissions module — single source of truth
+  const projectDeptMap = buildProjectDeptMap(projects);
+  const userProjectIds = currentUserId ? buildUserProjectSet(currentUserId, tasks) : new Set<string>();
+  const mainDepts = currentUser ? getVisibleDepts(currentUser, departments) : [];
 
   // Global KPIs
   const totalBudget    = projects.reduce((s, p) => s + p.budgetAmount, 0);
@@ -44,15 +43,13 @@ export const MobileHome: React.FC<Props> = ({ onDeptSelect, onTaskOpen }) => {
   const firstName = currentUser?.name.split(' ')[0] ?? 'there';
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
-  // Recent tasks (last 5)
-  const recentTasks = [...tasks]
-    .filter(t => {
-      if (!isContributor) return true;
-      const userTasksInProj = tasks.filter(ut => ut.projectId === t.projectId && ut.assigneeId === currentUserId);
-      return userTasksInProj.length > 0;
-    })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 4);
+  // Recent tasks scoped by permissions
+  const recentTasks = currentUser
+    ? [...tasks]
+        .filter(t => canViewTask(currentUser, t, projectDeptMap, userProjectIds))
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 4)
+    : [];
 
   const kpis = [
     { icon: <DollarSign size={14} />, label: 'Budget Used', value: fmt$(totalSpent), sub: `${budgetPct}% of ${fmt$(totalBudget)}`, color: 'text-brand-400', bg: 'bg-brand-500/10', danger: budgetPct > 80 },

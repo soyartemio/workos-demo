@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDemoStore, type TaskStatus } from '../../store/demoStore';
+import { getVisibleDepts, buildProjectDeptMap, buildUserProjectSet, canViewTask } from '../../utils/permissions';
 import { Plus } from 'lucide-react';
 
 interface Props {
@@ -34,27 +35,15 @@ export const KanbanBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
 
   const [filterDept, setFilterDept] = useState<string>('all');
 
-  const currentUser = users.find(u => u.id === currentUserId);
-  const isContributor = currentUser?.role === 'Contributor';
-
-  const mainDepts = departments.filter(d => {
-    if (d.id === 'dept-exec') return false;
-    if (isContributor && currentUser?.departmentId !== d.id) return false;
-    return true;
-  });
+  const currentUser = users.find(u => u.id === currentUserId) ?? null;
+  const projectDeptMap = buildProjectDeptMap(projects);
+  const userProjectIds = currentUserId ? buildUserProjectSet(currentUserId, tasks) : new Set<string>();
+  const mainDepts = currentUser ? getVisibleDepts(currentUser, departments) : [];
 
   const filtered = tasks.filter(t => {
-    if (filterDept !== 'all') {
-      const proj = projects.find(p => p.id === t.projectId);
-      if (proj?.departmentId !== filterDept) return false;
-    }
-    
-    if (isContributor) {
-      const userTasksInProj = tasks.filter(ut => ut.projectId === t.projectId && ut.assigneeId === currentUserId);
-      if (userTasksInProj.length === 0) return false;
-    }
-
-    return true;
+    if (filterDept !== 'all' && projectDeptMap.get(t.projectId) !== filterDept) return false;
+    if (!currentUser) return false;
+    return canViewTask(currentUser, t, projectDeptMap, userProjectIds);
   });
 
   // Cycle status on card click
