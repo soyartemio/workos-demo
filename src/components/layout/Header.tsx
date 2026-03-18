@@ -3,8 +3,8 @@
  * Shows current project/view context, search, and quick action to add task
  */
 
-import React from 'react';
-import { Search, Bell, Zap, Eye, EyeOff, Lock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Bell, Zap, Eye, EyeOff, Lock, Sun, Moon } from 'lucide-react';
 import { useDemoStore } from '../../store/demoStore';
 
 interface Props {
@@ -13,8 +13,17 @@ interface Props {
 
 export const Header: React.FC<Props> = ({ onAddTask }) => {
   const { isManagerView, toggleManagerView, projects, currentUserId, users } = useDemoStore();
-  const [searchFocused, setSearchFocused] = React.useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [isLight, setIsLight] = useState(false);
   const currentUser = users.find(u => u.id === currentUserId);
+
+  useEffect(() => {
+    if (isLight) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, [isLight]);
 
   // Pick the first project for quick "Add Task" shortcut
   const firstProject = projects[0];
@@ -64,6 +73,15 @@ export const Header: React.FC<Props> = ({ onAddTask }) => {
             + New Task
           </button>
         )}
+
+        {/* Theme toggle */}
+        <button
+          onClick={() => setIsLight(!isLight)}
+          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-gray-500 hover:text-brand-400 transition-colors"
+          title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+        >
+          {isLight ? <Moon size={15} /> : <Sun size={15} />}
+        </button>
 
         {/* Notification bell */}
         <div className="relative">

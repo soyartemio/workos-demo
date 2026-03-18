@@ -161,6 +161,24 @@ export const MobileDrawer: React.FC<Props> = ({ isOpen, onClose, onDeptSelect })
                     </button>
                   </div>
 
+                  {/* Theme Toggle */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5">
+                    <div>
+                      <p className="text-sm font-medium text-gray-200">Light Mode</p>
+                      <p className="text-[10px] text-gray-600">Switch to a brighter workspace</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                        if (isLight) document.documentElement.removeAttribute('data-theme');
+                        else document.documentElement.setAttribute('data-theme', 'light');
+                      }}
+                      className="w-11 h-6 rounded-full bg-base-700 border border-white/10 flex items-center justify-center text-xs relative overflow-hidden"
+                    >
+                      <span className="w-full text-center text-[10px]">🌓</span>
+                    </button>
+                  </div>
+
                   {/* Reset Demo */}
                   <button
                     onClick={handleReset}

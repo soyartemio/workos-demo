@@ -1,26 +1,83 @@
 @import "tailwindcss";
 
+:root {
+  /* DARK THEME (Default) */
+  --app-base-950: #0a0a0b;
+  --app-base-900: #121214;
+  --app-base-800: #1b1b1e;
+  --app-base-700: #27272a;
+  
+  /* Text & Borders - Improved contrast */
+  --app-white: #ffffff;
+  --app-gray-100: #f3f4f6;
+  --app-gray-200: #e5e7eb;
+  --app-gray-300: #d1d5db;
+  --app-gray-400: #9ca3af;
+  --app-gray-500: #6b7280;
+  --app-gray-600: #4b5563;
+
+  /* Brand & UI Colors */
+  --app-brand-500: #3b82f6;
+  --app-brand-600: #2563eb;
+  --app-danger-500: #ef4444;
+  --app-success-500: #22c55e;
+  --app-warning-500: #f59e0b;
+}
+
+:root[data-theme="light"] {
+  /* LIGHT THEME */
+  --app-base-950: #f8fafc;
+  --app-base-900: #ffffff;
+  --app-base-800: #f1f5f9;
+  --app-base-700: #e2e8f0;
+  
+  /* Text & Borders inverted */
+  --app-white: #0f172a;       /* white becomes dark text */
+  --app-gray-100: #1e293b;
+  --app-gray-200: #334155;
+  --app-gray-300: #475569;
+  --app-gray-400: #64748b;
+  --app-gray-500: #94a3b8;
+  --app-gray-600: #cbd5e1;
+
+  /* Brand colors (slightly adjusted for light mode legibility if needed, but original are fine) */
+  --app-brand-500: #2563eb;
+  --app-brand-600: #1d4ed8;
+  --app-danger-500: #dc2626;
+  --app-success-500: #16a34a;
+  --app-warning-500: #d97706;
+}
+
 @theme {
   --font-inter: 'Inter', system-ui, sans-serif;
   
-  --color-base-950: #0a0a0b;
-  --color-base-900: #121214;
-  --color-base-800: #1b1b1e;
-  --color-base-700: #27272a;
+  --color-base-950: var(--app-base-950);
+  --color-base-900: var(--app-base-900);
+  --color-base-800: var(--app-base-800);
+  --color-base-700: var(--app-base-700);
   
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
+  --color-white: var(--app-white);
+  --color-gray-100: var(--app-gray-100);
+  --color-gray-200: var(--app-gray-200);
+  --color-gray-300: var(--app-gray-300);
+  --color-gray-400: var(--app-gray-400);
+  --color-gray-500: var(--app-gray-500);
+  --color-gray-600: var(--app-gray-600);
   
-  --color-danger-500: #ef4444;
-  --color-success-500: #22c55e;
-  --color-warning-500: #f59e0b;
+  --color-brand-500: var(--app-brand-500);
+  --color-brand-600: var(--app-brand-600);
+  
+  --color-danger-500: var(--app-danger-500);
+  --color-success-500: var(--app-success-500);
+  --color-warning-500: var(--app-warning-500);
 }
 
 @layer base {
   html, body {
-    @apply bg-base-950 text-gray-200 antialiased h-screen overflow-hidden font-inter selection:bg-brand-500/30;
+    @apply bg-base-950 text-gray-200 antialiased h-screen overflow-hidden font-inter selection:bg-brand-500/30 transition-colors duration-500;
   }
 }
+
 
 @layer components {
   .glass-panel {

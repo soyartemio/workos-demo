@@ -60,24 +60,28 @@ export const DepartmentView: React.FC<{ onBack: () => void; onAddTask: (projectI
           {deptUsers.map(user => {
             const wl = getUserWorkload(user.id);
             return (
-              <div key={user.id} className="flex items-center gap-3">
-                <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-full border border-white/10 shrink-0" />
-                <div className="w-24 shrink-0">
-                  <p className="text-xs text-gray-300 truncate">{user.name.split(' ')[0]}</p>
-                  <p className="text-[10px] text-gray-600">{user.role}</p>
+              <div key={user.id} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 py-1">
+                <div className="flex items-center gap-3 md:w-32 shrink-0">
+                  <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-full border border-white/10 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-300 truncate">{user.name.split(' ')[0]}</p>
+                    <p className="text-[10px] text-gray-600">{user.role}</p>
+                  </div>
                 </div>
-                <div className="flex-1 h-5 bg-base-800 rounded-full overflow-hidden relative">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(wl.percentage, 100)}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                    className="h-full rounded-full"
-                    style={{ background: wl.isOverloaded ? '#ef4444' : dept.color, opacity: 0.85 }}
-                  />
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="flex-1 h-3 md:h-5 bg-base-800 rounded-full overflow-hidden relative">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(wl.percentage, 100)}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      className="h-full rounded-full"
+                      style={{ background: wl.isOverloaded ? '#ef4444' : dept.color, opacity: 0.85 }}
+                    />
+                  </div>
+                  <span className={`text-[10px] md:text-xs font-medium w-16 md:w-20 text-right shrink-0 ${wl.isOverloaded ? 'text-danger-500' : 'text-gray-400'}`}>
+                    {wl.allocated}/{wl.capacity}h {wl.isOverloaded && '⚠️'}
+                  </span>
                 </div>
-                <span className={`text-xs font-medium w-20 text-right ${wl.isOverloaded ? 'text-danger-500' : 'text-gray-400'}`}>
-                  {wl.allocated}/{wl.capacity}h {wl.isOverloaded && '⚠️'}
-                </span>
               </div>
             );
           })}
@@ -146,63 +150,66 @@ export const DepartmentView: React.FC<{ onBack: () => void; onAddTask: (projectI
                   exit={{ opacity: 0, height: 0 }}
                   className="border-t border-white/5 overflow-hidden"
                 >
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-white/5 bg-base-900/30">
-                        <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium">Task</th>
-                        <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium">Assignee</th>
-                        <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium">Status</th>
-                        <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium">Priority</th>
-                        {isManagerView && <th className="text-right px-4 py-2 text-xs text-gray-500 font-medium">Budget $</th>}
-                        {isManagerView && <th className="text-right px-4 py-2 text-xs text-gray-500 font-medium">Hours</th>}
-                        <th className="text-right px-4 py-2 text-xs text-gray-500 font-medium">Due</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {projTasks.map(task => {
-                        const assignee = users.find(u => u.id === task.assigneeId);
-                        return (
-                          <tr key={task.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                            <td className="px-4 py-2 text-gray-200 font-medium">{task.title}</td>
-                            <td className="px-4 py-2">
-                              {assignee && (
-                                <div className="flex items-center gap-1.5">
-                                  <img src={assignee.avatar} className="w-5 h-5 rounded-full border border-white/10" alt={assignee.name} />
-                                  <span className="text-xs text-gray-400">{assignee.name.split(' ')[0]}</span>
-                                </div>
+                  <div className="w-full overflow-x-auto no-scrollbar pb-2">
+                    <table className="w-full text-sm min-w-[600px]">
+                      <thead>
+                        <tr className="border-b border-white/5 bg-base-900/30">
+                          <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium">Task</th>
+                          <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium whitespace-nowrap">Assignee</th>
+                          <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium">Status</th>
+                          <th className="text-left px-4 py-2 text-xs text-gray-500 font-medium">Priority</th>
+                          {isManagerView && <th className="text-right px-4 py-2 text-xs text-gray-500 font-medium whitespace-nowrap">Budget $</th>}
+                          {isManagerView && <th className="text-right px-4 py-2 text-xs text-gray-500 font-medium">Hours</th>}
+                          <th className="text-right px-4 py-2 text-xs text-gray-500 font-medium">Due</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projTasks.map(task => {
+                          const assignee = users.find(u => u.id === task.assigneeId);
+                          return (
+                            <tr key={task.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                              <td className="px-4 py-2 text-gray-200 font-medium whitespace-nowrap">{task.title}</td>
+                              <td className="px-4 py-2">
+                                {assignee && (
+                                  <div className="flex items-center gap-1.5">
+                                    <img src={assignee.avatar} className="w-5 h-5 rounded-full border border-white/10 shrink-0" alt={assignee.name} />
+                                    <span className="text-xs text-gray-400 whitespace-nowrap">{assignee.name.split(' ')[0]}</span>
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-4 py-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const states: TaskStatus[] = ['Todo', 'In Progress', 'Review', 'Done', 'Blocked'];
+                                    const next = states[(states.indexOf(task.status) + 1) % states.length];
+                                    updateTaskStatus(task.id, next);
+                                  }}
+                                  className={`text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide transition-opacity hover:opacity-80 whitespace-nowrap ${STATUS_COLORS[task.status]}`}
+                                >
+                                  {task.status}
+                                </button>
+                              </td>
+                              <td className="px-4 py-2">
+                                <span className={`text-xs px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</span>
+                              </td>
+                              {isManagerView && (
+                                <td className={`px-4 py-2 text-right text-xs whitespace-nowrap ${task.spentAmount > task.budgetAmount ? 'text-danger-500' : 'text-gray-400'}`}>
+                                  {fmt$(task.spentAmount)} / {fmt$(task.budgetAmount)}
+                                </td>
                               )}
-                            </td>
-                            <td className="px-4 py-2">
-                              <button
-                                onClick={() => {
-                                  const states: TaskStatus[] = ['Todo', 'In Progress', 'Review', 'Done', 'Blocked'];
-                                  const next = states[(states.indexOf(task.status) + 1) % states.length];
-                                  updateTaskStatus(task.id, next);
-                                }}
-                                className={`text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide transition-opacity hover:opacity-80 ${STATUS_COLORS[task.status]}`}
-                              >
-                                {task.status}
-                              </button>
-                            </td>
-                            <td className="px-4 py-2">
-                              <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${PRIORITY_COLORS[task.priority]}`}>{task.priority}</span>
-                            </td>
-                            {isManagerView && (
-                              <td className={`px-4 py-2 text-right text-xs ${task.spentAmount > task.budgetAmount ? 'text-danger-500' : 'text-gray-400'}`}>
-                                {fmt$(task.spentAmount)} / {fmt$(task.budgetAmount)}
-                              </td>
-                            )}
-                            {isManagerView && (
-                              <td className={`px-4 py-2 text-right text-xs ${task.actualHrs > task.estimatedHrs ? 'text-danger-500' : 'text-gray-400'}`}>
-                                {task.actualHrs}/{task.estimatedHrs}h
-                              </td>
-                            )}
-                            <td className="px-4 py-2 text-right text-xs text-gray-500">{task.dueDate}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                              {isManagerView && (
+                                <td className={`px-4 py-2 text-right text-xs whitespace-nowrap ${task.actualHrs > task.estimatedHrs ? 'text-danger-500' : 'text-gray-400'}`}>
+                                  {task.actualHrs}/{task.estimatedHrs}h
+                                </td>
+                              )}
+                              <td className="px-4 py-2 text-right text-xs text-gray-500 whitespace-nowrap">{task.dueDate}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </motion.div>
               )}
             </div>

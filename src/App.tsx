@@ -52,8 +52,13 @@ function App() {
   const renderMobileContent = () => {
     switch (mobileTab) {
       case 'home':
-        return <MobileHome onDeptSelect={handleDeptSelect} onTaskOpen={handleOpenTask} />;
+        return activeDepartmentId ? (
+          <DepartmentView onBack={() => setActiveDepartment(null)} onAddTask={handleAddTask} />
+        ) : (
+          <MobileHome onDeptSelect={handleDeptSelect} onTaskOpen={handleOpenTask} />
+        );
       case 'projects':
+
         return <ProjectsPanel onAddTask={handleAddTask} />;
       case 'board':
         return (
