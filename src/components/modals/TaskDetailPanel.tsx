@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, User, Clock, DollarSign, Tag, Trash2, ClipboardList, CheckCircle2 } from 'lucide-react';
+import { X, Calendar, User, Clock, DollarSign, Tag, Trash2, ClipboardList, CheckCircle2, ChevronDown } from 'lucide-react';
 import { useDemoStore, type TaskStatus, type TaskPriority } from '../../store/demoStore';
 import { buildProjectDeptMap, canReassignTask } from '../../utils/permissions';
 
@@ -136,9 +136,10 @@ export const TaskDetailPanel: React.FC<Props> = ({ taskId, onClose }) => {
               <PropertyBox label="Assignee" icon={<User size={14} />}>
                 <select
                   value={task.assigneeId}
+                  onClick={e => e.stopPropagation()}
                   onChange={e => updateTask(task.id, { assigneeId: e.target.value })}
                   disabled={!canEditAssignee}
-                  className={`w-full bg-transparent border-none outline-none text-sm text-gray-200 ${canEditAssignee ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
+                  className={`w-full bg-transparent border-none outline-none text-sm text-gray-200 ${canEditAssignee ? 'cursor-pointer hover:text-white' : 'cursor-not-allowed opacity-80'}`}
                 >
                   {users.map(u => <option key={u.id} value={u.id} className="bg-base-900">{u.name}</option>)}
                 </select>
@@ -203,11 +204,27 @@ export const TaskDetailPanel: React.FC<Props> = ({ taskId, onClose }) => {
             </div>
             
             {/* Simple Stats for Context */}
-            <div className="p-4 rounded-xl bg-brand-500/5 border border-brand-500/10 flex items-center justify-between">
+            <div className={`relative p-4 rounded-xl bg-brand-500/5 border border-brand-500/10 flex items-center justify-between transition-colors ${canEditAssignee ? 'hover:bg-brand-500/10 cursor-pointer group' : ''}`}>
+               
+               {/* Invisible overlay select for the big card */}
+               {canEditAssignee && (
+                  <select
+                    value={task.assigneeId}
+                    onClick={e => e.stopPropagation()}
+                    onChange={e => updateTask(task.id, { assigneeId: e.target.value })}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  >
+                    {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
+                  </select>
+               )}
+
                <div className="flex items-center gap-3">
                  <img src={assignee?.avatar} className="w-10 h-10 rounded-full border-2 border-brand-500/20" alt="" />
                  <div>
-                   <p className="text-xs font-bold text-white leading-none">{assignee?.name}</p>
+                   <p className="text-xs font-bold text-white leading-none flex items-center gap-1">
+                     {assignee?.name}
+                     {canEditAssignee && <ChevronDown size={12} className="text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                   </p>
                    <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">{assignee?.role}</p>
                  </div>
                </div>
