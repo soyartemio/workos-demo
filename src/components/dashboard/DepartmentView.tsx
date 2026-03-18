@@ -33,13 +33,24 @@ interface DeptProps {
 }
 
 export const DepartmentView: React.FC<DeptProps> = ({ onBack, onAddTask, onTaskOpen }) => {
-  const { activeDepartmentId, departments, projects, tasks, users, getUserWorkload, updateTaskStatus, isManagerView } = useDemoStore();
+  const { activeDepartmentId, departments, projects, tasks, users, getUserWorkload, updateTaskStatus, isManagerView, currentUserId } = useDemoStore();
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
 
   const dept = departments.find(d => d.id === activeDepartmentId);
   if (!dept) return null;
 
-  const deptProjects = projects.filter(p => p.departmentId === dept.id);
+  const currentUser = users.find(u => u.id === currentUserId);
+  const isContributor = currentUser?.role === 'Contributor';
+
+  const deptProjects = projects.filter(p => {
+    if (p.departmentId !== dept.id) return false;
+    if (isContributor) {
+      const hasTasks = tasks.some(t => t.projectId === p.id && t.assigneeId === currentUserId);
+      return hasTasks;
+    }
+    return true;
+  });
+  
   const deptUsers = users.filter(u => u.departmentId === dept.id);
 
 

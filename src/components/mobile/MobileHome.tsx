@@ -20,7 +20,13 @@ export const MobileHome: React.FC<Props> = ({ onDeptSelect, onTaskOpen }) => {
   const { departments, projects, tasks, users, currentUserId, getDepartmentHealth } = useDemoStore();
 
   const currentUser = users.find(u => u.id === currentUserId);
-  const mainDepts = departments.filter(d => d.id !== 'dept-exec');
+  const isContributor = currentUser?.role === 'Contributor';
+
+  const mainDepts = departments.filter(d => {
+    if (d.id === 'dept-exec') return false;
+    if (isContributor && currentUser?.departmentId !== d.id) return false;
+    return true;
+  });
 
   // Global KPIs
   const totalBudget    = projects.reduce((s, p) => s + p.budgetAmount, 0);
@@ -40,6 +46,11 @@ export const MobileHome: React.FC<Props> = ({ onDeptSelect, onTaskOpen }) => {
 
   // Recent tasks (last 5)
   const recentTasks = [...tasks]
+    .filter(t => {
+      if (!isContributor) return true;
+      const userTasksInProj = tasks.filter(ut => ut.projectId === t.projectId && ut.assigneeId === currentUserId);
+      return userTasksInProj.length > 0;
+    })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 4);
 

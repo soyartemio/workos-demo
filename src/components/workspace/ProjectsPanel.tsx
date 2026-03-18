@@ -23,8 +23,16 @@ interface Props {
 
 
 export const ProjectsPanel: React.FC<Props> = ({ onAddTask }) => {
-  const { departments, projects, tasks, users, isManagerView } = useDemoStore();
-  const mainDepts = departments.filter(d => d.id !== 'dept-exec');
+  const { departments, projects, tasks, users, isManagerView, currentUserId } = useDemoStore();
+  
+  const currentUser = users.find(u => u.id === currentUserId);
+  const isContributor = currentUser?.role === 'Contributor';
+
+  const mainDepts = departments.filter(d => {
+    if (d.id === 'dept-exec') return false;
+    if (isContributor && currentUser?.departmentId !== d.id) return false;
+    return true;
+  });
 
   return (
     <div className="flex flex-col gap-6 pb-8">

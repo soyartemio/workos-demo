@@ -30,16 +30,31 @@ const PRIORITY_DOT: Record<string, string> = {
 };
 
 export const KanbanBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
-  const { tasks, users, projects, departments, updateTaskStatus } = useDemoStore();
+  const { tasks, users, projects, departments, updateTaskStatus, currentUserId } = useDemoStore();
 
   const [filterDept, setFilterDept] = useState<string>('all');
 
-  const mainDepts = departments.filter(d => d.id !== 'dept-exec');
+  const currentUser = users.find(u => u.id === currentUserId);
+  const isContributor = currentUser?.role === 'Contributor';
+
+  const mainDepts = departments.filter(d => {
+    if (d.id === 'dept-exec') return false;
+    if (isContributor && currentUser?.departmentId !== d.id) return false;
+    return true;
+  });
 
   const filtered = tasks.filter(t => {
-    if (filterDept === 'all') return true;
-    const proj = projects.find(p => p.id === t.projectId);
-    return proj?.departmentId === filterDept;
+    if (filterDept !== 'all') {
+      const proj = projects.find(p => p.id === t.projectId);
+      if (proj?.departmentId !== filterDept) return false;
+    }
+    
+    if (isContributor) {
+      const userTasksInProj = tasks.filter(ut => ut.projectId === t.projectId && ut.assigneeId === currentUserId);
+      if (userTasksInProj.length === 0) return false;
+    }
+
+    return true;
   });
 
   // Cycle status on card click

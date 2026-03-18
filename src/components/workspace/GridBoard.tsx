@@ -33,6 +33,14 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
     const proj = projects.find(p => p.id === t.projectId);
     if (filterDept !== 'all' && proj?.departmentId !== filterDept) return false;
     if (filterStatus !== 'all' && t.status !== filterStatus) return false;
+
+    // Permissions: If Contributors, they can only see tasks from projects where they belong
+    const isContributor = currentUser && currentUser.role === 'Contributor';
+    if (isContributor) {
+      const userTasksInProj = tasks.filter(ut => ut.projectId === t.projectId && ut.assigneeId === currentUserId);
+      if (userTasksInProj.length === 0) return false;
+    }
+
     return true;
   });
 
@@ -187,6 +195,7 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
                         <img src={assignee.avatar} alt={assignee.name} className="w-5 h-5 rounded-full border border-white/10 shrink-0" />
                         <select
                           value={task.assigneeId}
+                          onClick={(e) => e.stopPropagation()}
                           onChange={(e) => updateTask(task.id, { assigneeId: e.target.value })}
                           disabled={!canEditAssignee}
                           className={`appearance-none bg-transparent border-none outline-none text-xs text-gray-400 focus:text-gray-200 transition-colors truncate max-w-[80px] ${canEditAssignee ? 'cursor-pointer hover:text-gray-200' : 'cursor-not-allowed opacity-80'}`}

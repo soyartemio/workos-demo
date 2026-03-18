@@ -23,7 +23,13 @@ export const MobileDrawer: React.FC<Props> = ({ isOpen, onClose, onDeptSelect })
     resetToDefaults,
   } = useDemoStore();
 
-  const mainDepts = departments.filter(d => d.id !== 'dept-exec');
+  const currentUser = users.find(u => u.id === currentUserId);
+  const isContributor = currentUser?.role === 'Contributor';
+  const mainDepts = departments.filter(d => {
+    if (d.id === 'dept-exec') return false;
+    if (isContributor && currentUser?.departmentId !== d.id) return false;
+    return true;
+  });
 
   const DEPT_STATUS_MAP: Record<string, { label: string; cls: string }> = {
     'dept-eng': { label: 'At Risk', cls: 'bg-warning-500/10 text-warning-500 border-warning-500/20' },

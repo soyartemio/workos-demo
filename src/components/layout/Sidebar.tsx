@@ -30,7 +30,12 @@ export const Sidebar: React.FC<Props> = ({ currentView, onViewChange, className 
 
   const toggleDept = (id: string) => setExpandedDepts(p => ({ ...p, [id]: !p[id] }));
 
-  const mainDepts = departments.filter(d => d.id !== 'dept-exec');
+  const isContributor = currentUser?.role === 'Contributor';
+  const mainDepts = departments.filter(d => {
+    if (d.id === 'dept-exec') return false;
+    if (isContributor && currentUser?.departmentId !== d.id) return false;
+    return true;
+  });
 
   return (
     <aside className={`w-64 h-full bg-base-950 border-r border-white/5 flex flex-col shrink-0 ${className ?? ''}`}>
@@ -117,11 +122,11 @@ export const Sidebar: React.FC<Props> = ({ currentView, onViewChange, className 
               <div
                 key={u.id}
                 onClick={() => switchUser(u.id)}
-                className={`flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer text-xs transition-colors ${u.id === currentUserId ? 'bg-brand-500/10 text-brand-400' : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'}`}
+                className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-xs transition-colors ${u.id === currentUserId ? 'bg-brand-500/15 text-brand-300 font-medium' : 'text-gray-300 hover:bg-white/10 hover:text-white'}`}
               >
-                <img src={u.avatar} alt={u.name} className="w-4 h-4 rounded-full border border-white/10" />
+                <img src={u.avatar} alt={u.name} className="w-5 h-5 rounded-full border border-white/10" />
                 <span className="truncate">{u.name.split(' ')[0]}</span>
-                <span className="ml-auto text-[9px] text-gray-700">{u.role}</span>
+                <span className="ml-auto text-[10px] text-gray-500">{u.role}</span>
               </div>
             ))}
           </div>
