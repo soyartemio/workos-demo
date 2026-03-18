@@ -11,7 +11,9 @@ import { Plus } from 'lucide-react';
 
 interface Props {
   onAddTask: (projectId: string) => void;
+  onOpenTask: (taskId: string) => void;
 }
+
 
 const COLUMNS: { status: TaskStatus; label: string; color: string }[] = [
   { status: 'Todo',        label: 'To Do',      color: '#6b7280' },
@@ -27,8 +29,9 @@ const PRIORITY_DOT: Record<string, string> = {
   Low:    'bg-gray-500',
 };
 
-export const KanbanBoard: React.FC<Props> = ({ onAddTask }) => {
+export const KanbanBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
   const { tasks, users, projects, departments, updateTaskStatus } = useDemoStore();
+
   const [filterDept, setFilterDept] = useState<string>('all');
 
   const mainDepts = departments.filter(d => d.id !== 'dept-exec');
@@ -76,12 +79,14 @@ export const KanbanBoard: React.FC<Props> = ({ onAddTask }) => {
         </div>
       </div>
 
-      {/* Columns */}
-      <div className="flex gap-4 flex-1 overflow-x-auto pb-2">
+      {/* Columns — horizontal scroll with snap on mobile */}
+      <div className="flex gap-4 flex-1 overflow-x-auto pb-2 snap-x snap-mandatory md:snap-none">
+
         {COLUMNS.map(col => {
           const colTasks = filtered.filter(t => t.status === col.status);
           return (
-            <div key={col.status} className="flex flex-col w-72 shrink-0">
+            <div key={col.status} className="flex flex-col w-[85vw] md:w-72 shrink-0 snap-start">
+
               {/* Column header */}
               <div className="flex items-center gap-2 mb-3 px-1">
                 <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
@@ -105,9 +110,10 @@ export const KanbanBoard: React.FC<Props> = ({ onAddTask }) => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ delay: idx * 0.03 }}
-                        onClick={() => cycleStatus(task.id, task.status)}
-                        className="glass-panel rounded-xl p-3 cursor-pointer hover:bg-white/[0.04] active:scale-[0.98] transition-all group select-none"
+                        onClick={() => onOpenTask(task.id)}
+                        className="glass-panel rounded-xl p-3 cursor-pointer hover:bg-white/[0.04] hover:scale-[1.02] hover:border-white/20 active:scale-[0.98] transition-all group select-none shadow-lg"
                       >
+
                         {/* Project tag */}
                         {proj && (
                           <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full mb-2 inline-block" style={{ background: `${dept?.color}18`, color: dept?.color }}>
@@ -125,7 +131,8 @@ export const KanbanBoard: React.FC<Props> = ({ onAddTask }) => {
                             <span className="text-[10px] text-gray-600">{task.priority}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-gray-600">{task.dueDate}</span>
+                            <span className="text-[10px] text-gray-400">{task.dueDate}</span>
+
                             {assignee && (
                               <img src={assignee.avatar} alt={assignee.name} title={assignee.name} className="w-5 h-5 rounded-full border border-white/10" />
                             )}
@@ -133,9 +140,13 @@ export const KanbanBoard: React.FC<Props> = ({ onAddTask }) => {
                         </div>
 
                         {/* Advance hint */}
-                        <div className="mt-2 pt-2 border-t border-white/5 text-[9px] text-gray-700 group-hover:text-gray-500 transition-colors text-center">
-                          Click → advance to next status
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); cycleStatus(task.id, task.status); }}
+                          className="mt-2 pt-2 border-t border-white/5 text-[9px] font-bold uppercase tracking-wider text-gray-500 hover:text-brand-400 transition-colors text-center"
+                        >
+                          Cycle Status
                         </div>
+
                       </motion.div>
                     );
                   })}
@@ -171,8 +182,9 @@ export const KanbanBoard: React.FC<Props> = ({ onAddTask }) => {
                   layout
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  onClick={() => cycleStatus(task.id, task.status)}
-                  className="glass-panel rounded-xl p-3 cursor-pointer hover:bg-white/[0.04] transition-all border-danger-500/20 border select-none"
+                  onClick={() => onOpenTask(task.id)}
+                  className="glass-panel rounded-xl p-3 cursor-pointer hover:bg-white/[0.04] transition-all border-danger-500/30 border select-none"
+
                 >
                   {proj && (
                     <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full mb-2 inline-block" style={{ background: `${dept?.color}18`, color: dept?.color }}>

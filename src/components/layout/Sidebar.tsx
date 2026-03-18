@@ -12,9 +12,11 @@ type ViewType = 'dashboard' | 'workspace';
 interface Props {
   currentView: ViewType;
   onViewChange: (v: ViewType) => void;
+  className?: string;
 }
 
-export const Sidebar: React.FC<Props> = ({ currentView, onViewChange }) => {
+export const Sidebar: React.FC<Props> = ({ currentView, onViewChange, className }) => {
+
   const {
     departments, projects, users,
     activeDepartmentId, setActiveDepartment,
@@ -31,7 +33,8 @@ export const Sidebar: React.FC<Props> = ({ currentView, onViewChange }) => {
   const mainDepts = departments.filter(d => d.id !== 'dept-exec');
 
   return (
-    <aside className="w-64 h-full bg-base-950 border-r border-white/5 flex flex-col shrink-0">
+    <aside className={`w-64 h-full bg-base-950 border-r border-white/5 flex flex-col shrink-0 ${className ?? ''}`}>
+
       {/* Workspace Logo */}
       <div className="h-14 flex items-center px-4 border-b border-white/5 shrink-0">
         <div className="flex items-center gap-2">

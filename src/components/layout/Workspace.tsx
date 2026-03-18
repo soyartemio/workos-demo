@@ -14,9 +14,11 @@ type TabName = 'Main Table' | 'Board' | 'Workload' | 'Timeline' | 'Projects';
 
 interface Props {
   onAddTask: (projectId: string) => void;
+  onOpenTask: (taskId: string) => void;
 }
 
-export const Workspace: React.FC<Props> = ({ onAddTask }) => {
+export const Workspace: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
+
   const [activeTab, setActiveTab] = useState<TabName>('Main Table');
 
   return (
@@ -33,13 +35,15 @@ export const Workspace: React.FC<Props> = ({ onAddTask }) => {
       {/* Content */}
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-[1400px] mx-auto h-full">
-          {activeTab === 'Main Table' && <GridBoard onAddTask={onAddTask} />}
-          {activeTab === 'Board'      && <KanbanBoard onAddTask={onAddTask} />}
+          {activeTab === 'Main Table' && <GridBoard onAddTask={onAddTask} onOpenTask={onOpenTask} />}
+          {activeTab === 'Board'      && <KanbanBoard onAddTask={onAddTask} onOpenTask={onOpenTask} />}
           {activeTab === 'Workload'   && <WorkloadView />}
           {activeTab === 'Timeline'   && <GanttView />}
           {activeTab === 'Projects'   && <ProjectsPanel onAddTask={onAddTask} />}
+
         </div>
       </div>
+
     </div>
   );
 };

@@ -10,16 +10,18 @@ import { Eye, EyeOff, Lock, Trash2, Plus } from 'lucide-react';
 
 interface Props {
   onAddTask: (projectId: string) => void;
+  onOpenTask: (taskId: string) => void;
 }
 
 const fmt$ = (n: number) => n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n}`;
 
-export const GridBoard: React.FC<Props> = ({ onAddTask }) => {
+export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
   const {
     tasks, projects, users, departments,
     isManagerView, toggleManagerView,
     updateTask, deleteTask
   } = useDemoStore();
+
 
   const [filterDept, setFilterDept] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -77,7 +79,61 @@ export const GridBoard: React.FC<Props> = ({ onAddTask }) => {
         </div>
       </div>
 
-      {/* Table */}
+      {/* ─── MOBILE: Card List ─────────────────────────────────────── */}
+      <div className="md:hidden flex flex-col gap-2">
+        {filteredTasks.map((task) => {
+
+          const assignee = users.find(u => u.id === task.assigneeId);
+          const proj = projects.find(p => p.id === task.projectId);
+          const dept = departments.find(d => d.id === proj?.departmentId);
+          const STATUS_DOT: Record<string, string> = {
+            'Done': 'bg-success-500', 'In Progress': 'bg-brand-500',
+            'Review': 'bg-purple-500', 'Todo': 'bg-gray-500', 'Blocked': 'bg-danger-500',
+          };
+          return (
+            <div
+              key={task.id}
+              onClick={() => onOpenTask(task.id)}
+              className="glass-panel rounded-2xl p-4 cursor-pointer hover:bg-white/[0.04] active:scale-[0.98] transition-all"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0 mr-3">
+                  <p className="text-sm font-semibold text-white leading-tight truncate">{task.title}</p>
+                  {proj && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-1 inline-block" style={{ background: `${dept?.color}20`, color: dept?.color }}>
+                      {proj.name}
+                    </span>
+                  )}
+                </div>
+                {assignee && <img src={assignee.avatar} alt={assignee.name} className="w-8 h-8 rounded-full shrink-0 border border-white/10" />}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  task.status === 'Done' ? 'bg-success-500/10 text-success-400' :
+                  task.status === 'In Progress' ? 'bg-brand-500/10 text-brand-400' :
+                  task.status === 'Blocked' ? 'bg-danger-500/10 text-danger-400' :
+                  task.status === 'Review' ? 'bg-purple-500/10 text-purple-400' : 'bg-gray-500/10 text-gray-400'
+                }`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[task.status]}`} />
+                  {task.status}
+                </div>
+                <PriorityBadge priority={task.priority} />
+                <span className="text-[10px] text-gray-400 ml-auto">Due {task.dueDate}</span>
+              </div>
+            </div>
+          );
+        })}
+        {filteredTasks.length === 0 && (
+          <div className="flex items-center justify-center py-16 text-gray-600 text-sm">No tasks match the current filters.</div>
+        )}
+        {firstProject && (
+          <button onClick={() => onAddTask(firstProject.id)} className="mt-1 p-4 rounded-2xl border border-dashed border-white/10 text-gray-600 hover:text-gray-400 hover:border-white/20 transition-colors text-sm flex items-center justify-center gap-2">
+            <Plus size={14} /> Add new task
+          </button>
+        )}
+      </div>
+
+      {/* ─── DESKTOP: Dense Table (md+) ─────────────────────────────── */}
       <div className="flex-1 w-full overflow-auto rounded-xl border border-white/5 bg-base-900/50">
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
@@ -104,23 +160,22 @@ export const GridBoard: React.FC<Props> = ({ onAddTask }) => {
               return (
                 <tr key={task.id} className="border-b border-white/5 hover:bg-white/[0.02] group transition-colors">
                   {/* Title */}
-                  <td className="sticky left-0 bg-base-900/50 backdrop-blur group-hover:bg-base-900/80 pl-5 pr-4 py-2">
-                    <input
-                      type="text"
-                      value={task.title}
-                      onChange={e => updateTask(task.id, { title: e.target.value })}
-                      className="bg-transparent border-none outline-none focus:ring-1 focus:ring-brand-500/50 rounded px-1 w-full text-sm text-gray-200 font-medium"
-                    />
+                  <td className="sticky left-0 bg-base-900/50 backdrop-blur group-hover:bg-base-900/80 pl-5 pr-4 py-2 cursor-pointer" onClick={() => onOpenTask(task.id)}>
+                    <div className="flex flex-col">
+                       <span className="text-sm text-white font-medium group-hover:text-brand-400 transition-colors uppercase tracking-tight">{task.title}</span>
+                       <span className="text-[10px] text-gray-400 font-normal leading-none mt-0.5 opacity-60">ID: {task.id.toUpperCase()}</span>
+                    </div>
                   </td>
 
                   {/* Project */}
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2 cursor-pointer" onClick={() => onOpenTask(task.id)}>
                     {proj && (
-                      <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${dept?.color}18`, color: dept?.color }}>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider" style={{ background: `${dept?.color}18`, color: dept?.color }}>
                         {proj.name}
                       </span>
                     )}
                   </td>
+
 
                   {/* Assignee */}
                   <td className="px-4 py-2">
@@ -170,7 +225,8 @@ export const GridBoard: React.FC<Props> = ({ onAddTask }) => {
                   )}
 
                   {/* Due */}
-                  <td className="px-4 py-2 text-xs text-gray-600">{task.dueDate}</td>
+                  <td className="px-4 py-2 text-xs text-gray-400">{task.dueDate}</td>
+
 
                   {/* Delete */}
                   <td className="px-2 py-2">

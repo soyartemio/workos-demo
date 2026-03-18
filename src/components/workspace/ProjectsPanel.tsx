@@ -21,6 +21,7 @@ interface Props {
   onAddTask: (projectId: string) => void;
 }
 
+
 export const ProjectsPanel: React.FC<Props> = ({ onAddTask }) => {
   const { departments, projects, tasks, users, isManagerView } = useDemoStore();
   const mainDepts = departments.filter(d => d.id !== 'dept-exec');
