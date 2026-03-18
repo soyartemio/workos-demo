@@ -26,7 +26,13 @@ const PRIORITY_COLORS: Record<string, string> = {
   'Low':    'text-gray-400 bg-gray-500/10 border-gray-500/20',
 };
 
-export const DepartmentView: React.FC<{ onBack: () => void; onAddTask: (projectId: string) => void }> = ({ onBack, onAddTask }) => {
+interface DeptProps {
+  onBack: () => void;
+  onAddTask: (projectId: string) => void;
+  onTaskOpen: (taskId: string) => void;
+}
+
+export const DepartmentView: React.FC<DeptProps> = ({ onBack, onAddTask, onTaskOpen }) => {
   const { activeDepartmentId, departments, projects, tasks, users, getUserWorkload, updateTaskStatus, isManagerView } = useDemoStore();
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
 
@@ -108,7 +114,7 @@ export const DepartmentView: React.FC<{ onBack: () => void; onAddTask: (projectI
             <div key={proj.id} className="glass-panel rounded-xl overflow-hidden border-white/5">
               {/* Project Header */}
               <div
-                className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/[0.02] transition-colors group"
+                className="flex flex-col md:flex-row md:items-center justify-between p-4 cursor-pointer hover:bg-white/[0.02] transition-colors group gap-3"
                 onClick={() => setExpandedProject(isExpanded ? null : proj.id)}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -118,23 +124,23 @@ export const DepartmentView: React.FC<{ onBack: () => void; onAddTask: (projectI
                     <p className="text-xs text-gray-500 truncate mt-0.5">{proj.description}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 ml-4">
+                <div className="flex items-center gap-3 shrink-0 ml-7 md:ml-4 flex-wrap">
                   <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${statusColor[proj.status]}`}>{proj.status}</span>
                   {isManagerView && (
                     <>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">Budget</p>
-                        <p className={`text-xs font-medium ${budgetOverrun ? 'text-danger-500' : 'text-gray-300'}`}>{fmt$(spent)} / {fmt$(proj.budgetAmount)}</p>
+                      <div className="text-right bg-base-900/40 px-2 py-1 rounded-md border border-white/5">
+                        <p className="text-[9px] text-gray-500 uppercase tracking-widest">Budget</p>
+                        <p className={`text-xs font-bold ${budgetOverrun ? 'text-danger-500' : 'text-gray-300'}`}>{fmt$(spent)} / {fmt$(proj.budgetAmount)}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">Hours</p>
-                        <p className={`text-xs font-medium ${hrsUsed > proj.budgetHrs ? 'text-danger-500' : 'text-gray-300'}`}>{hrsUsed}/{proj.budgetHrs}h</p>
+                      <div className="text-right bg-base-900/40 px-2 py-1 rounded-md border border-white/5">
+                        <p className="text-[9px] text-gray-500 uppercase tracking-widest">Hours</p>
+                        <p className={`text-xs font-bold ${hrsUsed > proj.budgetHrs ? 'text-danger-500' : 'text-gray-300'}`}>{hrsUsed}/{proj.budgetHrs}h</p>
                       </div>
                     </>
                   )}
                   <button
                     onClick={e => { e.stopPropagation(); onAddTask(proj.id); }}
-                    className="glass-btn text-xs gap-1 border-white/5 hover:border-brand-500/30 hover:text-brand-400"
+                    className="glass-btn text-xs gap-1 border-white/5 hover:border-brand-500/30 hover:text-brand-400 ml-auto md:ml-0"
                   >
                     <Plus size={11} /> Task
                   </button>
@@ -167,7 +173,7 @@ export const DepartmentView: React.FC<{ onBack: () => void; onAddTask: (projectI
                         {projTasks.map(task => {
                           const assignee = users.find(u => u.id === task.assigneeId);
                           return (
-                            <tr key={task.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                            <tr key={task.id} onClick={() => onTaskOpen(task.id)} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors cursor-pointer">
                               <td className="px-4 py-2 text-gray-200 font-medium whitespace-nowrap">{task.title}</td>
                               <td className="px-4 py-2">
                                 {assignee && (

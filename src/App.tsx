@@ -53,7 +53,7 @@ function App() {
     switch (mobileTab) {
       case 'home':
         return activeDepartmentId ? (
-          <DepartmentView onBack={() => setActiveDepartment(null)} onAddTask={handleAddTask} />
+          <DepartmentView onBack={() => setActiveDepartment(null)} onAddTask={handleAddTask} onTaskOpen={handleOpenTask} />
         ) : (
           <MobileHome onDeptSelect={handleDeptSelect} onTaskOpen={handleOpenTask} />
         );
@@ -91,7 +91,7 @@ function App() {
           {currentView === 'dashboard' ? (
             <div className="p-6 max-w-[1400px] mx-auto">
               {activeDepartmentId ? (
-                <DepartmentView onBack={() => setActiveDepartment(null)} onAddTask={handleAddTask} />
+                <DepartmentView onBack={() => setActiveDepartment(null)} onAddTask={handleAddTask} onTaskOpen={handleOpenTask} />
               ) : (
                 <CEODashboard />
               )}
