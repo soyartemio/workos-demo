@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, User, Clock, DollarSign, Tag, Trash2, ClipboardList, CheckCircle2, ChevronDown } from 'lucide-react';
 import { useDemoStore, type TaskStatus, type TaskPriority } from '../../store/demoStore';
-import { buildProjectDeptMap, canReassignTask } from '../../utils/permissions';
+import { buildProjectDeptMap, canReassignTask, getAssignableUsers } from '../../utils/permissions';
 
 interface Props {
   taskId: string;
@@ -18,6 +18,8 @@ export const TaskDetailPanel: React.FC<Props> = ({ taskId, onClose }) => {
   const projectDeptMap = buildProjectDeptMap(projects);
   const taskDeptId = task ? (projectDeptMap.get(task.projectId) ?? '') : '';
   const canEditAssignee = currentUser && task ? canReassignTask(currentUser, taskDeptId) : false;
+  
+  const assignableUsers = getAssignableUsers(users, taskDeptId);
 
   if (!task) return null;
 
@@ -141,7 +143,7 @@ export const TaskDetailPanel: React.FC<Props> = ({ taskId, onClose }) => {
                   disabled={!canEditAssignee}
                   className={`w-full bg-transparent border-none outline-none text-sm text-gray-200 ${canEditAssignee ? 'cursor-pointer hover:text-white' : 'cursor-not-allowed opacity-80'}`}
                 >
-                  {users.map(u => <option key={u.id} value={u.id} className="bg-base-900">{u.name}</option>)}
+                  {assignableUsers.map(u => <option key={u.id} value={u.id} className="bg-base-900">{u.name}</option>)}
                 </select>
               </PropertyBox>
 
@@ -214,7 +216,7 @@ export const TaskDetailPanel: React.FC<Props> = ({ taskId, onClose }) => {
                     onChange={e => updateTask(task.id, { assigneeId: e.target.value })}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   >
-                    {users.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
+                    {assignableUsers.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
                   </select>
                )}
 

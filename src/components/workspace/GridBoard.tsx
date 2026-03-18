@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { useDemoStore, type TaskStatus, type TaskPriority } from '../../store/demoStore';
-import { getVisibleDepts, buildProjectDeptMap, buildUserProjectSet, canViewTask, canReassignTask } from '../../utils/permissions';
+import { getVisibleDepts, buildProjectDeptMap, buildUserProjectSet, canViewTask, canReassignTask, getAssignableUsers } from '../../utils/permissions';
 import { Eye, EyeOff, Lock, Trash2, Plus } from 'lucide-react';
 
 interface Props {
@@ -187,6 +187,7 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
                     {assignee && (() => {
                       const taskDeptId = projectDeptMap.get(task.projectId) ?? '';
                       const canEdit = currentUser ? canReassignTask(currentUser, taskDeptId) : false;
+                      const assignableUsers = getAssignableUsers(users, taskDeptId);
                       return (
                         <div className="flex items-center gap-1.5">
                           <img src={assignee.avatar} alt={assignee.name} className="w-5 h-5 rounded-full border border-white/10 shrink-0" />
@@ -197,7 +198,7 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
                             disabled={!canEdit}
                             className={`appearance-none bg-transparent border-none outline-none text-xs text-gray-400 focus:text-gray-200 transition-colors truncate max-w-[80px] ${canEdit ? 'cursor-pointer hover:text-gray-200' : 'cursor-default'}`}
                           >
-                            {users.map(u => (
+                            {assignableUsers.map(u => (
                               <option key={u.id} value={u.id} className="bg-base-900 text-gray-300">
                                 {u.name.split(' ')[0]}
                               </option>

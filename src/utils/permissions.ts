@@ -114,3 +114,15 @@ export function canReassignTask(user: User, taskDeptId: string): boolean {
   if (user.role === 'Contributor') return false;
   return user.departmentId === taskDeptId; // Director, Manager: own dept only
 }
+
+/**
+ * Returns the list of users that can be assigned to a task.
+ * Rule: Tasks can ONLY be assigned to users within the SAME department.
+ * (Even the CEO must obey this when reassigning a task).
+ */
+export function getAssignableUsers(allUsers: User[], taskDeptId: string): User[] {
+  if (!taskDeptId) return allUsers;
+  // CEO is theoretically in 'dept-exec' but can oversee everything. However, tasks 
+  // belong to operational departments (eng, mkt, ops, des), so we only show users from that dept.
+  return allUsers.filter(u => u.departmentId === taskDeptId || u.role === 'CEO');
+}
