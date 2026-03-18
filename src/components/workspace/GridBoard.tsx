@@ -28,6 +28,9 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
 
   const mainDepts = departments.filter(d => d.id !== 'dept-exec');
 
+  const currentUser = users.find(u => u.id === currentUserId);
+  const canEditAssignee = currentUser && currentUser.role !== 'Contributor';
+
   // Filter tasks
   const filteredTasks = tasks.filter(t => {
     const proj = projects.find(p => p.id === t.projectId);
@@ -45,9 +48,6 @@ export const GridBoard: React.FC<Props> = ({ onAddTask, onOpenTask }) => {
   });
 
   const firstProject = projects[0];
-
-  const currentUser = users.find(u => u.id === currentUserId);
-  const canEditAssignee = currentUser && currentUser.role !== 'Contributor';
 
   const selectCls = 'bg-base-800 border border-white/5 rounded-md px-2 py-1 text-xs text-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer';
 
